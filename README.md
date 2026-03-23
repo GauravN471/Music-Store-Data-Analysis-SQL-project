@@ -1,103 +1,144 @@
-# Music Store Analysis Project
+# 🎵 Music Store Data Analysis — SQL Project
 
-## Project Overview
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Advanced-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-CTEs%20%7C%20Joins%20%7C%20Window%20Functions-orange?style=for-the-badge)
+![Domain](https://img.shields.io/badge/Domain-Retail_%26_Entertainment-purple?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)
 
-The **Music Store Analysis Project** is a comprehensive SQL-based data analysis project. This project involves analyzing a digital music store's database to extract valuable business insights, including customer behaviors, popular genres, and revenue trends. By solving business-related queries, the project demonstrates proficiency in SQL for data exploration and analysis.
-
----
-
-## Key Features
-
-- **Database Queries**:
-  - Complex queries to derive meaningful insights.
-  - Usage of common table expressions (CTEs) for structured query development.
-  - Aggregations and window functions for advanced analysis.
-
-- **Insights Derived**:
-  - Identified the senior-most employee by job title.
-  - Determined countries with the most invoices.
-  - Analyzed top revenue-generating cities and customers.
-  - Found the most popular music genres by country.
-  - Explored customer spending patterns on music and artists.
+> **"Queried a digital music store's relational database across 11 business questions — from employee hierarchy and invoice analysis to genre popularity by country and top customer spend per region."**
 
 ---
 
-## SQL Queries and Outputs
+## 🎯 Executive Summary
 
-### 1. Senior-most Employee
-Query to find the senior-most employee based on job title, ordered by job level.
-
-### 2. Countries with the Most Invoices
-Query to rank countries by the number of invoices.
-
-### 3. Top 3 Total Invoices
-Query to list the top three highest invoice totals.
-
-### 4. City with the Best Customers
-Query to identify the city with the highest sum of invoice totals for a promotional event.
-
-### 5. Best Customer
-Query to determine the customer who spent the most money.
-
-### 6. Rock Music Listeners
-Query to list the email, first name, last name, and genre of all Rock music listeners, ordered by email.
-
-### 7. Top Rock Artists
-Query to invite the top 10 artists with the most Rock tracks in the dataset.
-
-### 8. Longest Songs
-Query to list tracks with song lengths exceeding the average, ordered by duration.
-
-### 9. Customer Spending on Artists
-Query to find how much each customer spent on specific artists.
-
-### 10. Most Popular Genre by Country
-Query to identify the most popular genre for each country based on purchases.
-
-### 11. Top Customer by Country
-Query to determine the customer who spent the most in each country, handling ties.
+A digital music store needed to understand its revenue distribution, customer spending patterns, top-performing genres by market, and which cities represented the highest commercial opportunity. I analysed the full relational database using SQL — progressing from simple aggregations to advanced CTEs and window functions — delivering 11 structured business answers across 3 difficulty levels.
 
 ---
 
-## Tools & Technologies Used
+## 🛠 Tech Stack
 
-- **SQL**:
-  - Analytical functions: `ROW_NUMBER()`, `WITH TIES`, and Common Table Expressions (CTEs).
-  - Aggregate functions: `SUM()`, `COUNT()`, `AVG()`, and `MAX()`.
-  - Joins: Inner joins for data integration.
-  - Sorting and filtering with `ORDER BY` and `WHERE`.
-
----
-
-## Insights & Findings
-
-- **Top Customers**: Identified customers with the highest spending patterns.
-- **Popular Genres**: Rock was one of the most purchased genres across multiple countries.
-- **Regional Trends**: Certain cities showed higher revenue, indicating potential for promotional events.
-- **Artist Performance**: Highlighted top-performing Rock artists by track count.
+| Tool | Purpose |
+|---|---|
+| **PostgreSQL** | Primary query engine |
+| **CTEs** | Multi-step logic for complex questions |
+| **Window Functions** | ROW_NUMBER(), WITH TIES for ranking |
+| **Aggregate Functions** | SUM(), COUNT(), AVG(), MAX() |
+| **JOINs** | Multi-table joins across invoice, customer, genre, artist tables |
+| **Subqueries** | Nested filtering for threshold-based questions |
 
 ---
 
-## How to Use
-
-1. Clone this repository to your local machine.
-2. Load the provided SQL scripts into your SQL environment (e.g., MySQL Workbench, SQL Server, or PostgreSQL).
-3. Execute the queries against the provided music store database.
-4. Analyze the outputs for business insights.
-
----
-
-## Future Enhancements
-
-- Visualize query outputs using Power BI or Tableau.
-- Automate data ingestion and query execution.
-- Develop dashboards for real-time insights.
-- Enhance analysis by integrating additional datasets.
+## 🗄 Database Schema
+```
+employee          → employee_id, last_name, first_name, title, levels
+customer          → customer_id, first_name, last_name, email, country, city
+invoice           → invoice_id, customer_id, total, billing_country, billing_city
+invoice_line      → invoice_line_id, invoice_id, track_id, unit_price, quantity
+track             → track_id, name, album_id, media_type_id, genre_id, milliseconds
+genre             → genre_id, name
+artist            → artist_id, name
+album             → album_id, title, artist_id
+```
 
 ---
 
-## Acknowledgments
+## ❓ 11 Business Questions — 3 Levels
 
-This project is based on a simulated music store database and serves as a demonstration of SQL query skills and data analysis expertise.
+**🟢 Easy**
+| # | Question | Technique |
+|---|---|---|
+| 1 | Senior-most employee by job level? | ORDER BY + LIMIT |
+| 2 | Countries with most invoices? | GROUP BY + COUNT |
+| 3 | Top 3 invoice totals? | ORDER BY + LIMIT |
+| 4 | City with highest invoice sum (for promo event)? | GROUP BY + SUM |
+| 5 | Best customer by total spend? | JOIN + SUM + ORDER BY |
+
+**🟡 Intermediate**
+| # | Question | Technique |
+|---|---|---|
+| 6 | All Rock music listeners — email, name, genre? | JOIN + WHERE + ORDER BY |
+| 7 | Top 10 Rock artists by track count? | JOIN + COUNT + GROUP BY |
+| 8 | Tracks longer than average song length? | Subquery + AVG |
+
+**🔴 Advanced**
+| # | Question | Technique |
+|---|---|---|
+| 9 | How much did each customer spend on each artist? | Multi-table JOIN + SUM |
+| 10 | Most popular genre per country? | CTE + ROW_NUMBER() |
+| 11 | Top spending customer per country (handling ties)? | CTE + WITH TIES |
 
 ---
+
+## 💻 Sample SQL — See the Code in Action
+
+**Q10: Most popular genre per country (Advanced — CTE + Window Function)**
+```sql
+WITH popular_genre AS (
+    SELECT
+        c.country,
+        g.name AS genre,
+        COUNT(il.quantity) AS purchases,
+        ROW_NUMBER() OVER (
+            PARTITION BY c.country
+            ORDER BY COUNT(il.quantity) DESC
+        ) AS row_num
+    FROM invoice_line il
+    JOIN invoice i    ON il.invoice_id = i.invoice_id
+    JOIN customer c   ON i.customer_id = c.customer_id
+    JOIN track t      ON il.track_id = t.track_id
+    JOIN genre g      ON t.genre_id = g.genre_id
+    GROUP BY c.country, g.name
+)
+SELECT country, genre, purchases
+FROM popular_genre
+WHERE row_num = 1
+ORDER BY country;
+```
+
+**Q4: Best city for a promotional music event**
+```sql
+SELECT
+    billing_city,
+    SUM(total) AS invoice_total
+FROM invoice
+GROUP BY billing_city
+ORDER BY invoice_total DESC
+LIMIT 1;
+```
+
+---
+
+## 💡 Business Insights — The "So What?"
+
+- **Identified Rock as the dominant genre across multiple countries** — with the top 10 Rock artists each contributing 40+ tracks to the catalogue, making Rock-focused promotions the highest-ROI marketing investment across most markets.
+
+- **Found significant spend concentration in a small number of cities** — the top city by invoice total generated disproportionately higher revenue than the average, making it the clear first choice for any live promotional event or partnership investment.
+
+- **Discovered that top-spending customers per country vary significantly in absolute value** — some country-level "top customers" represent major account relationships while others represent thin markets, informing where a VIP customer programme would have the most impact.
+
+---
+
+## 📋 Business Recommendations
+
+1. **Promotional Event Location** — Host the music festival in the highest invoice-sum city — the data clearly identifies this as the market with the deepest customer spend concentration.
+2. **Rock Genre Investment** — Prioritise expanding the Rock catalogue and Rock artist partnerships — it is the most purchased genre across the widest range of countries.
+3. **VIP Customer Programme** — The top-spending customers per country (Q11) form a ready-made VIP tier — targeted loyalty offers to these accounts would improve retention of the highest-value segment.
+4. **Market Expansion Signal** — Countries with high invoice counts but lower per-invoice totals represent volume markets with upsell potential — bundle and upgrade offers could increase average order value.
+
+---
+
+## 🗂 Repository Structure
+```
+Music-Store-Data-Analysis-SQL-project/
+├── README.md
+├── SQl query          ← All 11 SQL queries
+└── music_database.sql ← Full database schema and seed data
+```
+
+---
+
+## 👤 Author
+
+**Gaurav Nikam** — Data Analyst | SQL · Power BI · Excel · Bloomberg Terminal
+📧 gauravnikam471@gmail.com
+🔗 [LinkedIn](https://www.linkedin.com/in/-471-gaurav-nikam)
